@@ -1,6 +1,6 @@
 # OlymPulse
 
-## Authors {#what-are-we-doing}
+## Authors
 
 -   Raul Aguilar Lopez
 
