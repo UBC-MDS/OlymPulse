@@ -42,6 +42,18 @@ The dataset is made up of 15 variables, both categorical and numerical, these va
 
 Attribution:
 
-> The data set is public and can be found in [tidytuesday](https://github.com/rfordatascience/tidytuesday).
+> The data set is public and can be found in [tidytuesday](https://github.com/rfordatascience/tidytuesday). Follow this link  to access to the source dataset [olympics.csv](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv).
 
-> [olympics.csv](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv): follow this link to access to the source dataset.
+## Research questions and usage scenarios
+
+Below are some of the questions that will be answered through interaction with our dashboard:
+
+- How many gold medals has the United States won?
+- How many silver medals did Mexico win in the 90s?
+- What is the sport that brought the most medals to China in the 2008 Olympic Games?
+- How many gold medals has Canada won in swimming competitions?
+- How many medals did Michael Phelps win at the 2008 Olympics?
+- Which country has historically won the most medals in the Winter Olympic Games?
+
+Considering our target audience, a fictitious use case for our dashboard is presented below:
+> Rodrigo Costa was recently appointed President of the National Sports Commission of his country, Brazil. Rodrigo was the Olympic 200 metres butterfly swimming gold medal winner at the Barcelona 1992 Summer Olympic Games, so he is aware of the dedication, effort, and discipline required to become an Olympic athlete. This is very important given that Rodrigo's main goal in his new job is to create a structure for Brazilian Olympic sports to improve and to have the best historical performance at the Paris 2024 Summer Olympics Games. To achieve this goal, Rodrigo needs to know which discipline has historically brought more medals to Brazil to understand, structurally, what is being done well in that discipline and extrapolate these processes throughout all the sports commissions in Brazil.
