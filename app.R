@@ -36,7 +36,7 @@ ui <- fluidPage(
                   min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
       selectInput("team", "Country of Interest:", choices = sort(unique(na.omit(c(filtered_data$team, df_map$country_name))))),
       selectInput("season", "Season of Interest:", choices = unique(filtered_data$season)),
-      selectInput("sport", "Sport of Interest:", choices = c("All", sort(unique(filtered_data$sport))))
+      selectInput("sport", "Sport of Interest:", choices = c("All Sports", sort(unique(filtered_data$sport))))
     ),
     mainPanel(
       leafletOutput("world_map"),
@@ -55,7 +55,7 @@ server <- function(input, output, session) {
     subset(filtered_data, 
            year >= input$year_range[1] & year <= input$year_range[2] & 
              team == input$team & season == input$season & 
-             (input$sport == "All" | sport == input$sport))
+             (input$sport == "All Sports" | sport == input$sport))
   })
   
   # Create the interactive map of the world 
@@ -79,7 +79,7 @@ server <- function(input, output, session) {
   
   # Display country stats
   output$country_stats <- renderPrint({
-    if (input$team == "All") {
+    if (input$team == "All Sports") {
       "Showing top 5 countries with most medals. Please select a country to view its individual statistics."
     } else {
       country_data <- subset_data() |> filter(team == input$team)
@@ -98,15 +98,15 @@ server <- function(input, output, session) {
   })
   
   output$bar_plot <- renderPlot({
-    if (input$sport == "All") {
-      # Top 5 sports where most total amount of medals are achieved by the country in the selected range of years and season of interest
+    if (input$sport == "All Sports") {
+      # Top 5 years when most total number of medals are achieved in all sports
       top_five_years <- subset_data() |>
         group_by(year) |>
         summarize(total_medals = n()) |>
         arrange(desc(total_medals)) |>
         slice(1:5)
     } else {
-      # Top 5 years where most total number of medals are achieved in the sport
+      # Top 5 years where most total number of medals are achieved in the sport selected
       top_five_years <- subset_data() |>
         filter(sport == input$sport) |>
         group_by(year) |>
@@ -118,18 +118,20 @@ server <- function(input, output, session) {
         aes(x = total_medals, y = reorder(year, -total_medals), fill = as.factor(year)) +
         geom_bar(stat = "identity") +
         labs(x = "Total Number of Medals", y = "Year") +
-        ggtitle(paste0("Top 5 Years for Most Total Number of Medals in ", input$sport)) +
+        ggtitle(paste0("Top 5 Years for Most Medals in ", input$sport)) +
         theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
               panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none") +
         scale_fill_brewer(palette = "Set2")
   })
   
   output$line_plot <- renderPlot({
-    if (input$sport == "All") {
+    if (input$sport == "All Sports") {
+      # Trend in total number of medals over the selected range of years in all sports
       trend <- subset_data() |>
         group_by(year) |>
         summarize(total_medals = n()) 
     } else {
+      # Trend in total number of medals over the selected range of years in the selected sport 
       trend <- subset_data() |>
         filter(sport == input$sport) |>
         group_by(year) |>
