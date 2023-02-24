@@ -22,7 +22,7 @@ df_map <- as_tibble(world_map_data) |>
 filtered_data <- dataset |>
   drop_na(medal) |>
   mutate(code = countrycode(noc, origin = "ioc", destination = "iso3c")) |>
-  left_join(df_map, by = join_by(code)) |>
+  left_join(df_map, by = "code") |>
   mutate(team = ifelse(!is.na(country_name), country_name, team)) |>
   select(-c(code, country_name))
 
