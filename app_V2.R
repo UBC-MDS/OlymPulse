@@ -12,7 +12,8 @@ library(RColorBrewer)
 world_map_data <- sf::st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
 
 # Read the raw Olympics data 
-dataset <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
+#dataset <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
+dataset <- read.csv("olympics_data.csv")
 
 # Data wrangling to convert the country code from ioc format to iso such that it matches with the map data 
 df_map <- as_tibble(world_map_data) |>
@@ -67,12 +68,12 @@ tabPanel("Page 2",
                                        }")))),
          fluidRow(
            column(3,
-                  sliderInput("year_range", "Select Year Range:",
+                  sliderInput("year_range_p2", "Select Year Range:",
                               min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
-                  selectInput("team", "Country of Interest:", selected = 'Canada',
+                  selectInput("team_p2", "Country of Interest:", selected = 'Canada',
                               choices = sort(unique(na.omit(c(filtered_data$team, df_map$country_name))))),
                   
-                  checkboxGroupInput("season", "Winter/Summer", choices = unique(filtered_data$season),
+                  checkboxGroupInput("season_p2", "Winter/Summer", choices = unique(filtered_data$season),
                                      selected = unique(filtered_data$season)),
                   checkboxGroupInput("medal", "Medal Type", choices = unique(filtered_data$medal),
                                      selected = unique(filtered_data$medal))
@@ -100,6 +101,13 @@ server <- function(input, output, session) {
            year >= input$year_range[1] & year <= input$year_range[2] & 
              team == input$team & season == input$season & 
              (input$sport == "All Sports" | sport == input$sport))
+  })
+  
+  subset_data_p2 <- reactive({
+    subset(filtered_data, 
+           year >= input$year_range_p2[1] & year <= input$year_range_p2[2] & 
+             team == input$team_p2 & season == input$season_p2 & 
+             medal == input$medal)
   })
   
   # Create the interactive map of the world 
@@ -191,7 +199,21 @@ server <- function(input, output, session) {
             panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none")
   })
   
-  
+  output$medalTable <- renderDataTable({
+
+    medal_table <- subset_data_p2() |> 
+      rename(Country = team,
+             #Year = year,
+             #Season = season,
+             Sport = sport) |> 
+      group_by(Country,Sport) |> 
+      summarize("Total Medals" = n()) |> 
+      arrange(desc(`Total Medals`))
+
+
+    medal_table
+  })
+
 }
 
 # Run the application 
