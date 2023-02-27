@@ -8,6 +8,7 @@ library(sf)
 library(countrycode)
 library(RColorBrewer)
 library(treemapify)
+library(bslib)
 
 # Read the world map data 
 world_map_data <- sf::st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
@@ -30,7 +31,7 @@ filtered_data <- dataset |>
   dplyr::distinct()
 
 
-ui <- fluidPage(
+ui <- fluidPage(theme = bs_theme(bootswatch = 'minty'),
   tabsetPanel(
   tabPanel("Page 1",
   titlePanel(h1(id = "title","Country Level Overview of Medals", align = "center"),
@@ -98,6 +99,8 @@ tabPanel("Page 2",
 
 # Define server
 server <- function(input, output, session) {
+  
+  # bslib::bs_themer()
   
   # Create reactive data for selected range of years, country and season of interest
   subset_data <- reactive({
