@@ -205,19 +205,13 @@ server <- function(input, output, session) {
   
   output$medalTable <- renderDataTable({
 
-    medal_table <- subset_data_p2() |> 
+    subset_data_p2() |> 
       rename(Country = team,
-             #Year = year,
-             #Season = season,
              Sport = sport) |> 
       group_by(Country,Sport) |> 
       summarize("Total Medals" = n()) |> 
       arrange(desc(`Total Medals`))
-
-
-    medal_table
-  },
-  options = list(pageLength =10, searching = FALSE))
+      },options = list(pageLength =10, searching = FALSE))
   
   output$treemap <- renderPlot( 
     { subset_data_p2() |> 
