@@ -7,7 +7,11 @@ library(leaflet.extras)
 library(sf)
 library(countrycode)
 library(RColorBrewer)
-library(treemapify)
+if(!require(treemapify)){
+  install.packages("treemapify")
+  library(treemapify)
+}
+# library(treemapify)
 library(bslib)
 
 # Read the world map data 
