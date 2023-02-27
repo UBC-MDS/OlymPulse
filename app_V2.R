@@ -7,6 +7,7 @@ library(leaflet.extras)
 library(sf)
 library(countrycode)
 library(RColorBrewer)
+library(treemapify)
 
 # Read the world map data 
 world_map_data <- sf::st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
@@ -80,7 +81,10 @@ tabPanel("Page 2",
                   
            ),
            
-           column(9,dataTableOutput("medalTable")))
+           column(9,dataTableOutput("medalTable"))),
+         
+         fluidRow(
+           column(12,plotOutput("treemap")))
          
          
          )
@@ -212,6 +216,24 @@ server <- function(input, output, session) {
 
 
     medal_table
+  })
+  
+  output$treemap <- renderPlot( 
+    { subset_data_p2() |> 
+        group_by(team,sport) |> 
+        summarize("Total Medals" = n()) |> 
+        ggplot(aes(area = `Total Medals`, fill = `Total Medals`, label = sport,
+                   subgroup = `Total Medals`)) +
+        geom_treemap() + 
+        geom_treemap_text(colour = "white",
+                          place = "centre",
+                          size = 5,
+                          grow = FALSE) +
+        geom_treemap_subgroup_text(place = "centre", grow = FALSE,
+                                   colour = "black",
+                                   fontface = "italic") +
+        theme(legend.position = 'none') +
+        ggtitle("Tree Map showing Medal Tally by Sport")
   })
 
 }
