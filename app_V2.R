@@ -13,8 +13,8 @@ library(treemapify)
 world_map_data <- sf::st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
 
 # Read the raw Olympics data 
-#dataset <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
-dataset <- read.csv("olympics_data.csv")
+dataset <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
+#dataset <- read.csv("olympics_data.csv")
 
 # Data wrangling to convert the country code from ioc format to iso such that it matches with the map data 
 df_map <- as_tibble(world_map_data) |>
