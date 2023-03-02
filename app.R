@@ -11,28 +11,16 @@ if(!require(treemapify)){
   install.packages("treemapify")
   library(treemapify)
 }
-# library(treemapify)
 library(bslib)
 
-# Read the world map data 
+# Read clean world map data 
+df_map <- read.csv("data/clean/world_map_data.csv")
+
+# Read the clean Olympics data 
+filtered_data <- read.csv("data/clean/olympic_clean.csv")
+
+# read geo json
 world_map_data <- sf::st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
-
-# Read the raw Olympics data 
-dataset <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
-#dataset <- read.csv("olympics_data.csv")
-
-# Data wrangling to convert the country code from ioc format to iso such that it matches with the map data 
-df_map <- as_tibble(world_map_data) |>
-  select(id, name) |>
-  rename(code = id, country_name = name)
-
-filtered_data <- dataset |>
-  drop_na(medal) |>
-  mutate(code = countrycode(noc, origin = "ioc", destination = "iso3c")) |>
-  inner_join(df_map, by = 'code') |>
-  mutate(team = ifelse(!is.na(country_name), country_name, team)) |>
-  select(-c(code, country_name)) |> 
-  dplyr::distinct()
 
 
 ui <- fluidPage(theme = bs_theme(bootswatch = 'minty'),
@@ -118,7 +106,7 @@ server <- function(input, output, session) {
     subset(filtered_data, 
            year >= input$year_range_p2[1] & year <= input$year_range_p2[2] & 
              team == input$team_p2 & season == input$season_p2 & 
-             medal == input$medal)
+             medal %in% input$medal)
   })
   
   # Create the interactive map of the world 
