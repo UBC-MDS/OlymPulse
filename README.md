@@ -14,7 +14,7 @@ As sports fans, knowing the statistics of our favorite athletes and sports is ne
 
 ## Description
 
-![](img/OlymPulse_demo.mp4)
+![](img/OlymPulse_demo.gif)
 
 The app contains two tabs:
 
