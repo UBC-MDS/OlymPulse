@@ -47,8 +47,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                            
                            fluidRow(column (10,verbatimTextOutput("country_stats"))),
                            fluidRow(
-                             column(6,plotOutput("bar_plot")),
-                             column(6,plotOutput("line_plot")))
+                             column(4,plotOutput("bar_plot")),
+                             column(4,plotOutput("line_plot")), 
+                             column(4,plotOutput('bar_plot_medals')))
                            
                            
                   ),
@@ -59,7 +60,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                                               font-style: bold;
                                        }")))),
                            fluidRow(
-                             column(3,
+                             column(4,
                                     sliderInput("year_range_p2", "Select Year Range:",
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
                                     selectInput("team_p2", "Country of Interest:", selected = 'Canada',
@@ -72,7 +73,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                                     
                              ),
                              
-                             column(9,dataTableOutput("medalTable"))),
+                             column(8,dataTableOutput("medalTable"))),
                            
                            fluidRow(
                              column(12,plotOutput("treemap")))
@@ -99,6 +100,14 @@ server <- function(input, output, session) {
     subset(filtered_data, 
            year >= input$year_range_p2[1] & year <= input$year_range_p2[2] & 
              team == input$team_p2 & season == input$season_p2 & 
+             medal %in% input$medal)
+  })
+  
+  subset_data_p3 <- reactive({
+    subset(filtered_data, 
+           year >= input$year_range[1] & year <= input$year_range[2] & 
+             team == input$team & season == input$season & 
+             (input$sport == "All Sports" | sport == input$sport) &
              medal %in% input$medal)
   })
   
@@ -166,7 +175,8 @@ server <- function(input, output, session) {
       ggtitle(paste0("Top 5 Years for Most Medals in ", input$sport)) +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
             panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none") +
-      scale_fill_brewer(palette = "Blues")
+      ggthemes::scale_fill_tableau()
+      #scale_fill_brewer(palette = "Blues")
   })
   
   output$line_plot <- renderPlot({
@@ -214,6 +224,32 @@ server <- function(input, output, session) {
                           grow = TRUE) +
         theme(legend.position = 'none') 
     })
+  
+  output$bar_plot_medals <- renderPlot({
+    if (input$sport == "All Sports") {
+      # Top 5 years when most total number of medals are achieved in all sports
+      top_five_years <- subset_data_p3() |>
+        group_by(medal) |>
+        summarize(total_medals = n()) |>
+        arrange(desc(total_medals)) 
+    } else {
+      # Top 5 years where most total number of medals are achieved in the sport selected
+      top_five_years <- subset_data_p3() |>
+        filter(sport == input$sport) |>
+        group_by(medal) |>
+        summarize(total_medals = n()) |>
+        arrange(desc(total_medals)) 
+    }
+    ggplot(data = top_five_years) +
+      aes(x = total_medals, y = reorder(medal, -total_medals), fill = as.factor(medal)) +
+      geom_bar(stat = "identity") +
+      labs(x = "Total Number of Medals", y = "Type") +
+      ggtitle(paste0("Medals Won by Type")) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+            panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none") +
+      ggthemes::scale_fill_tableau() 
+
+  })
   
 }
 
