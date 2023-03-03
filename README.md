@@ -48,7 +48,7 @@ To install `OlymPulse` locally, you can do as follows:
 
         RScript app.R
 
-4.  Copy the address and paste it in your browser and load the dashboard.
+4.  Copy the address and paste it in your browser to load the dashboard.
 
 ## Authors
 
