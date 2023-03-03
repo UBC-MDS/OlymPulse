@@ -23,17 +23,16 @@ filtered_data <- read.csv("data/clean/olympic_clean.csv")
 world_map_data <- sf::st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
 
 
-ui <- fluidPage(theme = bs_theme(bootswatch = 'minty'),
+ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                 tabsetPanel(
-                  tabPanel("Page 1",
-                           titlePanel(h1(id = "title","Country Level Overview of Medals", align = "center"),
-                                      tags$head( tags$style(HTML("#title{color: yellow;
-                                              font-size: 20px;
+                  tabPanel("Country Level Overview ",
+                           titlePanel(h1(id = "title","OlymPulse", align = "center"),
+                                      tags$head( tags$style(HTML("#title{color: gray;
+                                              font-size: 60px;
                                               font-style: bold;
-                                              background-color:black
                                        }")))),
                            fluidRow(
-                             column(3,
+                             column(4,
                                     sliderInput("year_range", "Select Year Range:",
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
                                     selectInput("team", "Country of Interest:", selected = 'Canada',
@@ -44,21 +43,20 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'minty'),
                                     selectInput("sport", "Sport of Interest:", choices = c("All Sports", sort(unique(filtered_data$sport)))
                                     )
                              ),
-                             column(9,leafletOutput("world_map"))),
+                             column(8,leafletOutput("world_map"))),
                            
-                           fluidRow(column (12,verbatimTextOutput("country_stats"))),
+                           fluidRow(column (10,verbatimTextOutput("country_stats"))),
                            fluidRow(
                              column(6,plotOutput("bar_plot")),
                              column(6,plotOutput("line_plot")))
                            
                            
                   ),
-                  tabPanel("Page 2",
-                           titlePanel(h1(id = "title2","Medal Tally Breakdown", align = "center"),
-                                      tags$head( tags$style(HTML("#title2{color: yellow;
-                                              font-size: 20px;
+                  tabPanel("Medal Tally Breakdown",
+                           titlePanel(h1(id = "title2","OlymPulse", align = "center"),
+                                      tags$head( tags$style(HTML("#title2{color: gray;
+                                              font-size: 60px;
                                               font-style: bold;
-                                              background-color:black
                                        }")))),
                            fluidRow(
                              column(3,
@@ -84,11 +82,6 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'minty'),
                 ))
 
 
-
-
-
-
-
 # Define server
 server <- function(input, output, session) {
   
@@ -112,20 +105,20 @@ server <- function(input, output, session) {
   # Create the interactive map of the world 
   output$world_map <- renderLeaflet({
     leaflet() |>
-      addProviderTiles("CartoDB.Positron") |>
+      addProviderTiles("Esri.WorldStreetMap") |>
       addPolygons(data = world_map_data, 
                   group = "World Map", 
                   layerId = world_map_data$name, 
                   label = world_map_data$name,
                   color = "#FFFFFF", 
                   weight = 1, 
-                  fillOpacity = 0.8, 
+                  fillOpacity = 0.5, 
                   highlight = highlightOptions(weight = 1.5, 
                                                color = "lightblue", 
                                                fillColor = "lightblue",
                                                fillOpacity = 0.3,
                                                bringToFront = TRUE)) |>
-      setView(-10, -30, zoom = 1)
+      setView(0, 30, zoom = 1.5)
   })
   
   # Display country stats
@@ -173,7 +166,7 @@ server <- function(input, output, session) {
       ggtitle(paste0("Top 5 Years for Most Medals in ", input$sport)) +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
             panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none") +
-      scale_fill_brewer(palette = "Set2")
+      scale_fill_brewer(palette = "Blues")
   })
   
   output$line_plot <- renderPlot({
