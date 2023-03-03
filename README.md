@@ -1,22 +1,46 @@
 # OlymPulse
 
+## Welcome, sports enthusiast
+
+We are happy that you are interested in exploring the history of the medal-winning countries in the most important sports competition worldwide, the Olympic Games. In this app you will find a summary of the Olympic performance of countries throughout history.
+
+## Motivation
+
+The Olympic Games are one of the most anticipated sports competitions for sports fans and the most important competition for athletes and countries' sports federations. The level of skills demonstrated by the athletes in their respective disciplines during this competition raises the bar for what a human being is capable of, challenging the impossible and astonishing people worldwide.
+
+Being able to access statistics and indicators on the performance of Olympic athletes is of utmost importance in the planning of resources for sports federations, for these institutions it is necessary to understand what are the disciplines that have given the best results to their country and which ones have a great opportunity for improvement.
+
+As sports fans, knowing the statistics of our favorite athletes and sports is necessary to analyze a game or competition, as well as to be able to chat and debate with other sports enthusiasts.
+
+## Description
+
+![](img/OlymPulse_demo.gif)
+
+The app contains two tabs:
+
+1. `Country Level Overview` includes an interactive map that allows the users to click into each country and view the country's records in both Summer and Winter Olympic Games. In the side panel, there is a double-sided slider that allows the users to select the range of years they are interested in from 1896 to 2016. There are three menus which enable the users to select their country of interest (as an alternative way to using the interactive map), their sport of interest and their season of interest (Summer or Winter). With the options selected, the users can view the trend (a line chart) in the total number of medals over the given period of time, the top five medal-winning years and the medal count by type.
+
+2.
+
+ In particular, the dropdown menu for sport of interest allows the users to select either a particular sports or "all". If "all" is selected, the users will be able to view the top five sports in which the selected country won most medals during the selected period of time (a bar chart). Furthermore, the users can select either a particular season or "all" for the season of interest. If "all" is selected, the users will obtain the statistics for both seasons combined.
+
+## Explore de app
+
+You can access the deployed app on [shinyapps.io here](https://raulapps.shinyapps.io/OlymPulse/)!
+
+## About the data
+
+This was created using a historical dataset on the modern Olympic Games athletes, including both Summer and Winter games from Athens 1896 to Rio 2016. The dataset contains 271,116 registers including both medal winners and non-winners. However, we will focus on athletes who won an Olympic medal (39,783 records).
+
+The data set is public and can be found in [tidytuesday](https://github.com/rfordatascience/tidytuesday). Follow this link  to access to the source dataset [olympics.csv](https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv).
+
 ## Authors
 
--   Raul Aguilar Lopez
+- Raul Aguilar
 
--   Manvir Kohli
+- Manvir Kohli
 
--   Crystal Geng
-
-## Description of the Dashboard
-
-This dashboard contains an interactive map of the world that includes each country's records of participation and historical data in the Olympics Games from Athens 1896 to Rio 2016. The interactive map allows the users to click into each country and view the country's records in both Summer and Winter Olympic Games.
-
-In the side panel, there is a double-sided slider that allows the users to select the range of years they are interested in from 1896 to 2016. There are three dropdown menus which enable the users to select their country of interest (as an alternative way to using the interactive map), their sport of interest and their season of interest (Summer or Winter). With the options selected, the users can view the trend (a line chart) in the total number of medals over the given period of time and the top five medal-winning years (a bar chart). In particular, the dropdown menu for sport of interest allows the users to select either a particular sports or "all". If "all" is selected, the users will be able to view the top five sports in which the selected country won most medals during the selected period of time (a bar chart). Furthermore, the users can select either a particular season or "all" for the season of interest. If "all" is selected, the users will obtain the statistics for both seasons combined.
-
-## Sample Sketch of the Dashboard
-
-![](img/wireframe_final.png)
+- Crystal Geng
 
 ## Contributing
 
