@@ -13,16 +13,32 @@ if(!require(treemapify)){
 }
 library(bslib)
 
-# Read clean world map data 
-df_map <- read.csv("data/clean/world_map_data.csv")
+# Read clean world map data, commented out failing during deployment
+#df_map <- read.csv("data/clean/world_map_data.csv")
 
-# Read the clean Olympics data 
-filtered_data <- read.csv("data/clean/olympic_clean.csv")
+# Read the clean Olympics data, commented out failing during deployment
+#filtered_data <- read.csv("data/clean/olympic_clean.csv")
 
 # read geo json
 world_map_data <- sf::st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
 
+# read raw data
+dataset <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
 
+# Data wrangling to convert the country code from ioc format to iso such that it matches with the map data 
+df_map <- as_tibble(world_map_data) |>
+    select(id, name) |>
+    rename(code = id, country_name = name)
+
+filtered_data <- dataset |>
+    drop_na(medal) |>
+    mutate(code = countrycode(noc, origin = "ioc", destination = "iso3c")) |>
+    inner_join(df_map, by = 'code') |>
+    mutate(team = ifelse(!is.na(country_name), country_name, team)) |>
+    select(-c(code, country_name)) |> 
+    dplyr::distinct()
+
+# building UI
 ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                 tabsetPanel(
                   tabPanel("Country Level Overview ",
