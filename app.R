@@ -42,9 +42,9 @@ filtered_data <- dataset |>
 ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                 tabsetPanel(
                   tabPanel("Country Level Overview ",
-                           titlePanel(h1(id = "title","OlymPulse", align = "center"),
+                           titlePanel(h1(id = "title","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
                                       tags$head( tags$style(HTML("#title{color: gray;
-                                              font-size: 60px;
+                                              font-size: 40px;
                                               font-style: bold;
                                        }")))),
                            fluidRow(
@@ -70,9 +70,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                            
                   ),
                   tabPanel("Medal Tally Breakdown",
-                           titlePanel(h1(id = "title2","OlymPulse", align = "center"),
+                           titlePanel(h1(id = "title2","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
                                       tags$head( tags$style(HTML("#title2{color: gray;
-                                              font-size: 60px;
+                                              font-size: 40px;
                                               font-style: bold;
                                        }")))),
                            fluidRow(
