@@ -12,6 +12,10 @@ Being able to access statistics and indicators on the performance of Olympic ath
 
 As sports fans, knowing the statistics of our favorite athletes and sports is necessary to analyze a game or competition, as well as to be able to chat and debate with other sports enthusiasts.
 
+## Explore de app
+
+You can access the deployed app on [shinyapps.io here](https://raulapps.shinyapps.io/OlymPulse/)!
+
 ## Description
 
 ![](img/OlymPulse_demo.gif)
@@ -21,10 +25,6 @@ The app contains two tabs:
 1. `Country Level Overview` includes an interactive map that allows the users to click into each country and view the country's records in both Summer and Winter Olympic Games. In the side panel, there is a double-sided slider that allows the users to select the range of years they are interested in from 1896 to 2016. There are three menus which enable the users to select their country of interest (as an alternative way to using the interactive map), their sport of interest and their season of interest (Summer or Winter). With the options selected, the users can view the trend (a line chart) in the total number of medals over the given period of time, the top five medal-winning years and the medal count by type.
 
 2. `Medal Tally Breakdown` similar to the first tab, includes a double-sided slider that allows the users to select the range of years in addition to three menus which enable the users to select their country of interest, their season of interest and the meda type. Este apartado contiene una tabla que muestra las medallas por deporte y un treemap que muestra los principales deportes.
-
-## Explore de app
-
-You can access the deployed app on [shinyapps.io here](https://raulapps.shinyapps.io/OlymPulse/)!
 
 ## About the data
 
