@@ -4,6 +4,13 @@
 
 We are happy that you are interested in exploring the history of the medal-winning countries in the most important sports competition worldwide, the Olympic Games. In this app you will find a summary of the Olympic performance of countries throughout history.
 
+- [Motivation](#motivation)
+- [Explore the app](#explore-the-app)
+- [Description](#description)
+- [About the data](#about-the-data)
+- [Installation](#installation)
+- [Contributing](#contributing)
+
 ## Motivation
 
 The Olympic Games are one of the most anticipated sports competitions for sports fans and the most important competition for athletes and countries' sports federations. The level of skills demonstrated by the athletes in their respective disciplines during this competition raises the bar for what a human being is capable of, challenging the impossible and astonishing people worldwide.
@@ -12,7 +19,7 @@ Being able to access statistics and indicators on the performance of Olympic ath
 
 As sports fans, knowing the statistics of our favorite athletes and sports is necessary to analyze a game or competition, as well as to be able to chat and debate with other sports enthusiasts.
 
-## Explore de app
+## Explore the app
 
 You can access the deployed app on [shinyapps.io here](https://raulapps.shinyapps.io/OlymPulse/)!
 
@@ -50,18 +57,17 @@ To install `OlymPulse` locally, you can do as follows:
 
 4.  Copy the address and paste it in your browser to load the dashboard.
 
-## Authors
-
--   Raul Aguilar
-
--   Manvir Kohli
-
--   Crystal Geng
-
 ## Contributing
 
-Interested in contributing? Check out the [contributing guidelines](https://github.com/UBC-MDS/OlymPulse/blob/main/CONTRIBUTING.md). Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
+Interested in contributing? We are glad you are interested, please check out the [contributing guidelines](https://github.com/UBC-MDS/OlymPulse/blob/main/CONTRIBUTING.md). Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
 
 ## License
 
 `OlymPulse` was created by Raul Aguilar Lopez, Manvir Kohli and Crystal Geng. The materials of this project are licensed under the MIT License. If re-using/re-mixing please provide attribution and link to this webpage.
+
+## Contributors
+Crystal Geng, Manvir Kohli, Raul Aguilar
+
+<a href="https://github.com/UBC-MDS/OlymPulse/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=UBC-MDS/OlymPulse" />
+</a>
