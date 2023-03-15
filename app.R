@@ -14,16 +14,17 @@ if(!require(treemapify)){
 library(bslib)
 
 # Read clean world map data, commented out failing during deployment
-#df_map <- read.csv("data/clean/world_map_data.csv")
+# df_map <- read.csv("data/clean/world_map_data.csv")
 
 # Read the clean Olympics data, commented out failing during deployment
-#filtered_data <- read.csv("data/clean/olympic_clean.csv")
+# filtered_data <- read.csv("data/clean/olympic_clean.csv")
 
 # read geo json
-world_map_data <- sf::st_read("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
+world_map_data <- sf::st_read("data/json/countries.geo.json")
 
 # read raw data
-dataset <- read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
+dataset <- read.csv("data/raw/olympic_raw.csv")
+#read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
 
 # Data wrangling to convert the country code from ioc format to iso such that it matches with the map data 
 df_map <- as_tibble(world_map_data) |>
@@ -39,7 +40,7 @@ filtered_data <- dataset |>
     dplyr::distinct()
 
 # building UI
-ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
+ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                 tabsetPanel(
                   tabPanel("Country Level Overview ",
                            titlePanel(h1(id = "title","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
@@ -48,7 +49,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                                               font-style: bold;
                                        }")))),
                            fluidRow(
-                             column(4,
+                             column(3,
                                     sliderInput("year_range", "Select Year Range:",
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
                                     selectInput("team", "Country of Interest:", selected = 'Canada',
@@ -59,9 +60,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                                     selectInput("sport", "Sport of Interest:", choices = c("All Sports", sort(unique(filtered_data$sport)))
                                     )
                              ),
-                             column(8,leafletOutput("world_map"))),
+                             column(9,leafletOutput("world_map")), padding=0),
                            
-                           fluidRow(column (10,verbatimTextOutput("country_stats"))),
+                           fluidRow(column (12,verbatimTextOutput("country_stats"))),
                            fluidRow(
                              column(4,plotOutput("bar_plot")),
                              column(4,plotOutput("line_plot")), 
@@ -96,6 +97,9 @@ ui <- fluidPage(theme = bs_theme(bootswatch = 'cerulean'),
                            
                            
                   )
+                ),
+                ui <- fluidPage(
+                  downloadButton("download1")
                 ))
 
 
@@ -184,15 +188,39 @@ server <- function(input, output, session) {
         arrange(desc(total_medals)) |>
         slice(1:5)
     }
-    ggplot(data = top_five_years) +
-      aes(x = total_medals, y = reorder(year, -total_medals), fill = as.factor(year)) +
+    if (nrow(top_five_years) == 0) {
+      # Displays a void plot if no data are available in the selected country
+      ggplot() +
+      theme_void()
+    } 
+    else {
+      # Setting the x-axis labels to integers only
+      if(max(top_five_years$total_medals) < 5) {
+        breaks <- seq(0, max(top_five_years$total_medals), by = 1)
+      } 
+      else if(max(top_five_years$total_medals) >= 80) {
+        breaks <- seq(0, max(top_five_years$total_medals), by = 20)
+      }
+      else {
+        breaks <- seq(0, max(top_five_years$total_medals), by = 5)
+      }
+      ggplot(data = top_five_years) +
+      aes(x = total_medals, y = reorder(year, -total_medals), fill = as.factor(year), alpha=0.95) +
       geom_bar(stat = "identity") +
-      labs(x = "Total Number of Medals", y = "Year") +
+      geom_text(aes(label = total_medals), 
+                  position = position_stack(vjust = 0.5), 
+                  size = 5, face='bold') +
+      labs(x = "Total Number of Medals", y = "Year", size=32) +
       ggtitle(paste0("Top 5 Years for Most Medals in ", input$sport)) +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none") +
-      ggthemes::scale_fill_tableau()
-      #scale_fill_brewer(palette = "Blues")
+            panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none",
+            plot.title = element_text(size = 16, face = "bold"),
+            axis.text.x = element_text(size = 14),
+            axis.text.y = element_text(size = 14),
+            axis.title = element_text(size = 15)) +
+      ggthemes::scale_fill_tableau() +
+      scale_x_continuous(breaks = breaks)
+    }
   })
   
   output$line_plot <- renderPlot({
@@ -208,13 +236,27 @@ server <- function(input, output, session) {
         group_by(year) |>
         summarize(total_medals = n()) 
     }
-    ggplot(data = trend) +
-      aes(y = total_medals, x = year) +
-      geom_line(color = "lightblue", size = 2) +
-      labs(y = "Total Number of Medals", x = "Year") +
-      ggtitle(paste0("Trend in Total Number of Medals in ", input$sport)) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none")
+    
+    if (nrow(trend) == 0) {
+      # Displays a void plot if no data are available in the selected country
+      ggplot() +
+        theme_void()
+    } else {
+      ggplot(data = trend) +
+        aes(y = total_medals, x = year) +
+        geom_line(color = "thistle", size = 1.5, alpha=0.5) +
+        geom_point(color = "lightpink3", fill = 'lightpink3', size = 2.5, alpha=0.8, shape=5) +
+        scale_x_continuous(breaks = seq(min(trend$year), max(trend$year), by = 16)) +
+        labs(y = "Total Number of Medals", x = "Year") +
+        ggtitle(paste0("Trend in Total Number of Medals in ", input$sport)) +
+        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+              panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none",
+              plot.title = element_text(size = 16, face = "bold"),
+              axis.text.x = element_text(size = 14),
+              axis.text.y = element_text(size = 14),
+              axis.title = element_text(size = 15))
+    }
+    
   })
   
   output$medalTable <- renderDataTable({
@@ -256,14 +298,47 @@ server <- function(input, output, session) {
         summarize(total_medals = n()) |>
         arrange(desc(total_medals)) 
     }
-    ggplot(data = top_five_years) +
-      aes(x = total_medals, y = reorder(medal, -total_medals), fill = as.factor(medal)) +
-      geom_bar(stat = "identity") +
-      labs(x = "Total Number of Medals", y = "Type") +
-      ggtitle(paste0("Medals Won by Type")) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none") +
-      ggthemes::scale_fill_tableau() 
+      
+    if (nrow(top_five_years) == 0) {
+      # Displays a void plot if no data are available in the selected country
+      ggplot() +
+        theme_void()
+    } else {
+      if(max(top_five_years$total_medals) <= 10) {
+        breaks <- seq(0, max(top_five_years$total_medals), by = 1)
+      } 
+      else if(max(top_five_years$total_medals) <= 50) {
+        breaks <- seq(0, max(top_five_years$total_medals), by = 10)
+      }
+      else if(max(top_five_years$total_medals) >= 1000) {
+        breaks <- seq(0, max(top_five_years$total_medals), by = 200)
+      }
+      else {
+        breaks <- seq(0, max(top_five_years$total_medals), by = 50)
+      }
+      ggplot(data = top_five_years) +
+        aes(x = medal, y = total_medals, fill = medal, alpha=0.95) +
+        geom_col(width = 0.7) +
+        geom_text(aes(label = total_medals), 
+                  position = position_stack(vjust = 0.5), 
+                  size = 5, face='bold') +
+        scale_fill_manual(values = c("gold", "gray70", "#cd7f32"), 
+                          breaks = c("Gold", "Silver", "Bronze")) +
+        labs(x = "", y = "Type", fill = "") +
+        ggtitle(paste0("Medals Won by Type")) +
+        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+              panel.background = element_blank(), axis.line = element_line(colour = "black"), 
+              plot.title = element_text(size = 16, face = "bold"),
+              axis.text.x = element_text(size = 14),
+              axis.text.y = element_text(size = 14),
+              axis.title = element_text(size = 15)) +
+        coord_flip() +
+        scale_x_discrete(limits = fct_inorder(top_five_years$medal)) +
+        guides(fill = FALSE, alpha = FALSE) +
+        scale_y_continuous(breaks = breaks)
+      
+    
+    }
 
   })
   
