@@ -12,8 +12,17 @@ if(!require(treemapify)){
   library(treemapify)
 }
 library(bslib)
-library(shinyWidgets)
 
+if(!require(shinyWidgets)){
+  install.packages("shinyWidgets")
+  library(shinyWidgets)
+}
+
+if(!require(shinycssloaders)){
+  install.packages("shinycssloaders")
+  library(shinycssloaders)
+  
+}
 # Read clean world map data, commented out failing during deployment
 # df_map <- read.csv("data/clean/world_map_data.csv")
 
@@ -62,7 +71,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                              column(3,
                                     sliderInput("year_range", "Select Year Range:",
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
-                                    selectInput("team", "Country of Interest:", selected = 'Canada',
+                                    selectInput("team", "Country of Interest:", selected = 'Australia',
                                                 choices = sort(unique(na.omit(c(filtered_data$team, df_map$country_name))))),
                                     
                                     checkboxGroupInput("season", "Winter/Summer", choices = unique(filtered_data$season),
@@ -70,13 +79,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                                     selectInput("sport", "Sport of Interest:", choices = c("All Sports", sort(unique(filtered_data$sport)))
                                     )
                              ),
-                             column(9,leafletOutput("world_map")), padding=0),
+                             column(9,shinycssloaders::withSpinner(leafletOutput("world_map")), padding=0)),
                            
                            fluidRow(column (12,verbatimTextOutput("country_stats"))),
                            fluidRow(
-                             column(4,plotOutput("bar_plot")),
-                             column(4,plotOutput("line_plot")), 
-                             column(4,plotOutput('bar_plot_medals')))
+                             column(4,shinycssloaders::withSpinner(plotOutput("bar_plot"))),
+                             column(4,shinycssloaders::withSpinner(plotOutput("line_plot"))), 
+                             column(4,shinycssloaders::withSpinner(plotOutput('bar_plot_medals'))))
                            
                            
                   ),
@@ -91,11 +100,12 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                              column(4,
                                     sliderInput("year_range_p2", "Select Year Range:",
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
-                                    selectInput("team_p2", "Country of Interest:", selected = 'Canada',
+                                    selectInput("team_p2", "Country of Interest:", selected = 'Australia',
                                                 choices = sort(unique(na.omit(c(filtered_data$team, df_map$country_name))))),
                                       
                                     pickerInput("sport_p2", "Sport of Interest:", choices = sort(unique(filtered_data$sport)), 
-                                                  multiple = TRUE, selected = c('Rowing','Ice Hockey','Athletics','Swimming','Football'),
+                                                  multiple = TRUE, selected = unique(filtered_data$sport),
+                                                # selected = c('Rowing','Hockey','Athletics','Swimming','Basketball'),
                                                 options = pickerOptions(title = "Please Select a Sport",
                                                                              actionsBox = TRUE, liveSearch=TRUE,dropupAuto=F),
                                       ),
@@ -111,10 +121,15 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                                     
                              ),
                              
-                             column(8,dataTableOutput("medalTable"))),
+                             column(8,shinycssloaders::withSpinner(
+                               dataTableOutput("medalTable"),
+                               image = 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2NmZjNiY2FiZDM5Zjk5NGUwZWFmMWU2ODVmMjNlZmNlOGU4ZGYzOCZjdD1n/JIX9t2j0ZTN9S/giphy.gif',
+                               image.width = 200,image.height = 150))),
                            
                            fluidRow(
-                             column(plotOutput("treemap"),width = 12))
+                             column(shinycssloaders::withSpinner(plotOutput("treemap"),
+                                                 image = 'https://i.pinimg.com/originals/e3/f7/e6/e3f7e65c0fb0ea0a35d0a5ffe2ccbf8a.gif',
+                                                 image.width = 200,image.height = 150),width = 12))
                            
                            
                   )
@@ -131,6 +146,14 @@ server <- function(input, output, session) {
   
   # Create reactive data for selected range of years, country and season of interest
 
+  subset_data <- reactive({
+    subset(filtered_data, 
+           year >= input$year_range[1] & year <= input$year_range[2] & 
+             team == input$team & season == input$season & 
+             (input$sport == "All Sports" | sport == input$sport))
+  })
+  
+ 
   subset_data_p2 <- reactive({
   subset(filtered_data, 
            year >= input$year_range_p2[1] & year <= input$year_range_p2[2] & 
@@ -138,15 +161,7 @@ server <- function(input, output, session) {
              medal %in% input$medal & sport %in% input$sport_p2) 
       })
   
-  observeEvent(subset_data_p2(), {
-    event_choices <- unique(subset_data_p2()$event)
-    updatePickerInput(session = session,
-                      inputId = "event", choices = event_choices,
-                      selected = event_choices) 
-    
-  })
-  
-    
+
   subset_data_p3 <- reactive({
     subset(filtered_data, 
            year >= input$year_range[1] & year <= input$year_range[2] & 
@@ -154,6 +169,19 @@ server <- function(input, output, session) {
              (input$sport == "All Sports" | sport == input$sport) &
              medal %in% input$medal)
   })
+  
+  subset_country <- reactive({
+    subset(filtered_data, 
+           year >= input$year_range[1] & year <= input$year_range[2] &
+             season == input$season)
+  })
+  
+  subset_country_p2 <- reactive({
+    subset(filtered_data, 
+           year >= input$year_range_p2[1] & year <= input$year_range_p2[2] &
+             season == input$season_p2)
+  })
+  
   
   # Create the interactive map of the world 
   output$world_map <- renderLeaflet({
@@ -182,7 +210,7 @@ server <- function(input, output, session) {
     } else {
       country_data <- subset_data() |> filter(team == input$team)
       if (nrow(country_data) == 0) {
-        "No medals were achieved in the selected range of years."
+        "There are no medals for the selected filters."
       } else {
         paste0("Total number of medals: ", nrow(country_data))
       }
@@ -193,6 +221,44 @@ server <- function(input, output, session) {
   observeEvent(input$world_map_shape_click, {
     selected_country <- input$world_map_shape_click$id
     updateSelectInput(session, "team", selected = selected_country)
+  })
+  
+  ## Update country dropdown on tab 1 based on selected year and season so that countries who did not participate in those selections are excluded
+  observeEvent(subset_country(), {
+    country_choices <- unique(subset_country()$team)
+    
+    updateSelectInput(session = session,
+                      inputId = "team", choices = country_choices,
+                      selected = 'Australia') 
+    
+    
+    updateSelectInput(session = session,
+                      inputId = "team_p2", choices = country_choices,
+                      selected = 'Australia') 
+  })
+  
+  
+  
+  ## Update country dropdown on tab 1 based on selected year and season so that countries who did not participate in those selections are excluded
+
+  observeEvent(subset_country_p2(), {
+    
+    country_choices_2 <- unique(subset_country_p2()$team)
+    
+    updateSelectInput(session = session,
+                      inputId = "team_p2", choices = country_choices_2,
+                      selected = 'Australia')
+
+   })
+  
+  ## Update event dropdown on tab 2 based on selected sport
+  
+  observeEvent(subset_data_p2(), {
+    event_choices <- unique(subset_data_p2()$event)
+    updatePickerInput(session = session,
+                      inputId = "event", choices = event_choices,
+                      selected = event_choices) 
+    
   })
   
   output$bar_plot <- renderPlot({
