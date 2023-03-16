@@ -42,6 +42,15 @@ filtered_data <- dataset |>
 
 # building UI
 ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
+                tags$head(
+                  tags$style(HTML(".shiny-output-error-validation {
+                                color: #ff0000;
+                              font-weight: bold;
+                               font-size: 40px;
+                               text-align: center;
+                               padding: 480px 0;
+                               }"))),
+              
                 tabsetPanel(
                   tabPanel("Country Level Overview ",
                            titlePanel(h1(id = "title","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
@@ -71,7 +80,8 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                            
                            
                   ),
-                  tabPanel("Medal Tally Breakdown",
+                      tabPanel("Medal Tally Breakdown",
+                                 
                            titlePanel(h1(id = "title2","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
                                       tags$head( tags$style(HTML("#title2{color: gray;
                                               font-size: 40px;
@@ -83,10 +93,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
                                     selectInput("team_p2", "Country of Interest:", selected = 'Canada',
                                                 choices = sort(unique(na.omit(c(filtered_data$team, df_map$country_name))))),
-                                      pickerInput("sport_p2", "Sport of Interest:", choices = sort(unique(filtered_data$sport)), 
-                                                  multiple = TRUE, options = pickerOptions(title = "Please Select a Sport",
-                                                                                           actionsBox = TRUE, liveSearch=TRUE,dropupAuto=F),
+                                      
+                                    pickerInput("sport_p2", "Sport of Interest:", choices = sort(unique(filtered_data$sport)), 
+                                                  multiple = TRUE, selected = c('Rowing','Ice Hockey','Athletics','Swimming','Football'),
+                                                options = pickerOptions(title = "Please Select a Sport",
+                                                                             actionsBox = TRUE, liveSearch=TRUE,dropupAuto=F),
                                       ),
+                                    
                                     pickerInput("event", "Event of Interest:", choices = NULL,multiple = TRUE,  options = 
                                                   pickerOptions(title = "Please Select a Sport First",liveSearch = T,
                                                                 actionsBox = TRUE,dropupAuto=F)
@@ -101,7 +114,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                              column(8,dataTableOutput("medalTable"))),
                            
                            fluidRow(
-                             column(12,plotOutput("treemap")))
+                             column(plotOutput("treemap"),width = 12))
                            
                            
                   )
@@ -125,17 +138,18 @@ server <- function(input, output, session) {
   })
   
   subset_data_p2 <- reactive({
-    subset(filtered_data, 
+  subset(filtered_data, 
            year >= input$year_range_p2[1] & year <= input$year_range_p2[2] & 
              team == input$team_p2 & season == input$season_p2 & 
              medal %in% input$medal & sport %in% input$sport_p2) 
-  })
+      })
   
   observeEvent(subset_data_p2(), {
     event_choices <- unique(subset_data_p2()$event)
     updatePickerInput(session = session,
                       inputId = "event", choices = event_choices,
                       selected = event_choices) 
+    
   })
   
   subset_data_p3 <- reactive({
@@ -276,6 +290,10 @@ server <- function(input, output, session) {
   
   
   output$medalTable <- renderDataTable({
+    validate(
+      need(nrow(subset_data_p2() |> 
+                  filter(event %in% input$event)) > 0, paste( "There are no medals for this selection."))
+    )
     req(input$event)
     subset_data_p2() |> 
       filter(event %in% input$event)|> 
@@ -289,6 +307,8 @@ server <- function(input, output, session) {
   },options = list(pageLength =10, searching = FALSE))
   
   output$treemap <- renderPlot( {
+    
+  
     req(input$event)
     subset_data_p2() |> 
       filter(event %in% input$event)|> 
