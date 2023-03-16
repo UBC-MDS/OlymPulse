@@ -130,13 +130,7 @@ server <- function(input, output, session) {
   # bslib::bs_themer()
   
   # Create reactive data for selected range of years, country and season of interest
-  subset_data <- reactive({
-    subset(filtered_data, 
-           year >= input$year_range[1] & year <= input$year_range[2] & 
-             team == input$team & season == input$season & 
-             (input$sport == "All Sports" | sport == input$sport))
-  })
-  
+
   subset_data_p2 <- reactive({
   subset(filtered_data, 
            year >= input$year_range_p2[1] & year <= input$year_range_p2[2] & 
@@ -152,6 +146,7 @@ server <- function(input, output, session) {
     
   })
   
+    
   subset_data_p3 <- reactive({
     subset(filtered_data, 
            year >= input$year_range[1] & year <= input$year_range[2] & 
