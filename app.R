@@ -42,11 +42,6 @@ filtered_data <- dataset |>
 
 # building UI
 ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
-                tags$style(
-                  ".ident-picker {
-                background:white;
-            }"
-                ),
                 tabsetPanel(
                   tabPanel("Country Level Overview ",
                            titlePanel(h1(id = "title","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
@@ -88,12 +83,10 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
                                     selectInput("team_p2", "Country of Interest:", selected = 'Canada',
                                                 choices = sort(unique(na.omit(c(filtered_data$team, df_map$country_name))))),
-                                    tags$div(
-                                      class = "ident-picker",
                                       pickerInput("sport_p2", "Sport of Interest:", choices = sort(unique(filtered_data$sport)), 
                                                   multiple = TRUE, options = pickerOptions(title = "Please Select a Sport",
                                                                                            actionsBox = TRUE, liveSearch=TRUE,dropupAuto=F),
-                                      )),
+                                      ),
                                     pickerInput("event", "Event of Interest:", choices = NULL,multiple = TRUE,  options = 
                                                   pickerOptions(title = "Please Select a Sport First",liveSearch = T,
                                                                 actionsBox = TRUE,dropupAuto=F)
