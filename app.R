@@ -13,6 +13,16 @@ if(!require(treemapify)){
 }
 library(bslib)
 
+if(!require(shinyWidgets)){
+  install.packages("shinyWidgets")
+  library(shinyWidgets)
+}
+
+if(!require(shinycssloaders)){
+  install.packages("shinycssloaders")
+  library(shinycssloaders)
+  
+}
 # Read clean world map data, commented out failing during deployment
 # df_map <- read.csv("data/clean/world_map_data.csv")
 
@@ -28,19 +38,28 @@ dataset <- read.csv("data/raw/olympic_raw.csv")
 
 # Data wrangling to convert the country code from ioc format to iso such that it matches with the map data 
 df_map <- as_tibble(world_map_data) |>
-    select(id, name) |>
-    rename(code = id, country_name = name)
+  select(id, name) |>
+  rename(code = id, country_name = name)
 
 filtered_data <- dataset |>
-    drop_na(medal) |>
-    mutate(code = countrycode(noc, origin = "ioc", destination = "iso3c")) |>
-    inner_join(df_map, by = 'code') |>
-    mutate(team = ifelse(!is.na(country_name), country_name, team)) |>
-    select(-c(code, country_name)) |> 
-    dplyr::distinct()
+  drop_na(medal) |>
+  mutate(code = countrycode(noc, origin = "ioc", destination = "iso3c")) |>
+  inner_join(df_map, by = 'code') |>
+  mutate(team = ifelse(!is.na(country_name), country_name, team)) |>
+  select(-c(code, country_name)) |> 
+  dplyr::distinct()
 
 # building UI
 ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
+                tags$head(
+                  tags$style(HTML(".shiny-output-error-validation {
+                                color: #ff0000;
+                              font-weight: bold;
+                               font-size: 40px;
+                               text-align: center;
+                               padding: 480px 0;
+                               }"))),
+              
                 tabsetPanel(
                   tabPanel("Country Level Overview ",
                            titlePanel(h1(id = "title","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
@@ -52,7 +71,7 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                              column(3,
                                     sliderInput("year_range", "Select Year Range:",
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
-                                    selectInput("team", "Country of Interest:", selected = 'Canada',
+                                    selectInput("team", "Country of Interest:", selected = 'Australia',
                                                 choices = sort(unique(na.omit(c(filtered_data$team, df_map$country_name))))),
                                     
                                     checkboxGroupInput("season", "Winter/Summer", choices = unique(filtered_data$season),
@@ -60,17 +79,18 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                                     selectInput("sport", "Sport of Interest:", choices = c("All Sports", sort(unique(filtered_data$sport)))
                                     )
                              ),
-                             column(9,leafletOutput("world_map")), padding=0),
+                             column(9,shinycssloaders::withSpinner(leafletOutput("world_map")), padding=0)),
                            
                            fluidRow(column (12,verbatimTextOutput("country_stats"))),
                            fluidRow(
-                             column(4,plotOutput("bar_plot")),
-                             column(4,plotOutput("line_plot")), 
-                             column(4,plotOutput('bar_plot_medals')))
+                             column(4,shinycssloaders::withSpinner(plotOutput("bar_plot"))),
+                             column(4,shinycssloaders::withSpinner(plotOutput("line_plot"))), 
+                             column(4,shinycssloaders::withSpinner(plotOutput('bar_plot_medals'))))
                            
                            
                   ),
-                  tabPanel("Medal Tally Breakdown",
+                      tabPanel("Medal Tally Breakdown",
+                                 
                            titlePanel(h1(id = "title2","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
                                       tags$head( tags$style(HTML("#title2{color: gray;
                                               font-size: 40px;
@@ -80,9 +100,20 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                              column(4,
                                     sliderInput("year_range_p2", "Select Year Range:",
                                                 min = 1896, max = 2016, value = c(1896, 2016), sep = ""),
-                                    selectInput("team_p2", "Country of Interest:", selected = 'Canada',
+                                    selectInput("team_p2", "Country of Interest:", selected = 'Australia',
                                                 choices = sort(unique(na.omit(c(filtered_data$team, df_map$country_name))))),
+                                      
+                                    pickerInput("sport_p2", "Sport of Interest:", choices = sort(unique(filtered_data$sport)), 
+                                                  multiple = TRUE, selected = unique(filtered_data$sport),
+                                                # selected = c('Rowing','Hockey','Athletics','Swimming','Basketball'),
+                                                options = pickerOptions(title = "Please Select a Sport",
+                                                                             actionsBox = TRUE, liveSearch=TRUE,dropupAuto=F),
+                                      ),
                                     
+                                    pickerInput("event", "Event of Interest:", choices = NULL,multiple = TRUE,  options = 
+                                                  pickerOptions(title = "Please Select a Sport First",liveSearch = T,
+                                                                actionsBox = TRUE,dropupAuto=F)
+                                    ),
                                     checkboxGroupInput("season_p2", "Winter/Summer", choices = unique(filtered_data$season),
                                                        selected = unique(filtered_data$season)),
                                     checkboxGroupInput("medal", "Medal Type", choices = unique(filtered_data$medal),
@@ -90,10 +121,15 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                                     
                              ),
                              
-                             column(8,dataTableOutput("medalTable"))),
+                             column(8,shinycssloaders::withSpinner(
+                               dataTableOutput("medalTable"),
+                               image = 'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2NmZjNiY2FiZDM5Zjk5NGUwZWFmMWU2ODVmMjNlZmNlOGU4ZGYzOCZjdD1n/JIX9t2j0ZTN9S/giphy.gif',
+                               image.width = 200,image.height = 150))),
                            
                            fluidRow(
-                             column(12,plotOutput("treemap")))
+                             column(shinycssloaders::withSpinner(plotOutput("treemap"),
+                                                 image = 'https://i.pinimg.com/originals/e3/f7/e6/e3f7e65c0fb0ea0a35d0a5ffe2ccbf8a.gif',
+                                                 image.width = 200,image.height = 150),width = 12))
                            
                            
                   )
@@ -109,6 +145,7 @@ server <- function(input, output, session) {
   # bslib::bs_themer()
   
   # Create reactive data for selected range of years, country and season of interest
+
   subset_data <- reactive({
     subset(filtered_data, 
            year >= input$year_range[1] & year <= input$year_range[2] & 
@@ -116,13 +153,15 @@ server <- function(input, output, session) {
              (input$sport == "All Sports" | sport == input$sport))
   })
   
+ 
   subset_data_p2 <- reactive({
-    subset(filtered_data, 
+  subset(filtered_data, 
            year >= input$year_range_p2[1] & year <= input$year_range_p2[2] & 
              team == input$team_p2 & season == input$season_p2 & 
-             medal %in% input$medal)
-  })
+             medal %in% input$medal & sport %in% input$sport_p2) 
+      })
   
+
   subset_data_p3 <- reactive({
     subset(filtered_data, 
            year >= input$year_range[1] & year <= input$year_range[2] & 
@@ -130,6 +169,19 @@ server <- function(input, output, session) {
              (input$sport == "All Sports" | sport == input$sport) &
              medal %in% input$medal)
   })
+  
+  subset_country <- reactive({
+    subset(filtered_data, 
+           year >= input$year_range[1] & year <= input$year_range[2] &
+             season == input$season)
+  })
+  
+  subset_country_p2 <- reactive({
+    subset(filtered_data, 
+           year >= input$year_range_p2[1] & year <= input$year_range_p2[2] &
+             season == input$season_p2)
+  })
+  
   
   # Create the interactive map of the world 
   output$world_map <- renderLeaflet({
@@ -158,7 +210,7 @@ server <- function(input, output, session) {
     } else {
       country_data <- subset_data() |> filter(team == input$team)
       if (nrow(country_data) == 0) {
-        "No medals were achieved in the selected range of years."
+        "There are no medals for the selected filters."
       } else {
         paste0("Total number of medals: ", nrow(country_data))
       }
@@ -169,6 +221,44 @@ server <- function(input, output, session) {
   observeEvent(input$world_map_shape_click, {
     selected_country <- input$world_map_shape_click$id
     updateSelectInput(session, "team", selected = selected_country)
+  })
+  
+  ## Update country dropdown on tab 1 based on selected year and season so that countries who did not participate in those selections are excluded
+  observeEvent(subset_country(), {
+    country_choices <- unique(subset_country()$team)
+    
+    updateSelectInput(session = session,
+                      inputId = "team", choices = country_choices,
+                      selected = 'Australia') 
+    
+    
+    updateSelectInput(session = session,
+                      inputId = "team_p2", choices = country_choices,
+                      selected = 'Australia') 
+  })
+  
+  
+  
+  ## Update country dropdown on tab 1 based on selected year and season so that countries who did not participate in those selections are excluded
+
+  observeEvent(subset_country_p2(), {
+    
+    country_choices_2 <- unique(subset_country_p2()$team)
+    
+    updateSelectInput(session = session,
+                      inputId = "team_p2", choices = country_choices_2,
+                      selected = 'Australia')
+
+   })
+  
+  ## Update event dropdown on tab 2 based on selected sport
+  
+  observeEvent(subset_data_p2(), {
+    event_choices <- unique(subset_data_p2()$event)
+    updatePickerInput(session = session,
+                      inputId = "event", choices = event_choices,
+                      selected = event_choices) 
+    
   })
   
   output$bar_plot <- renderPlot({
@@ -191,7 +281,7 @@ server <- function(input, output, session) {
     if (nrow(top_five_years) == 0) {
       # Displays a void plot if no data are available in the selected country
       ggplot() +
-      theme_void()
+        theme_void()
     } 
     else {
       # Setting the x-axis labels to integers only
@@ -205,21 +295,21 @@ server <- function(input, output, session) {
         breaks <- seq(0, max(top_five_years$total_medals), by = 5)
       }
       ggplot(data = top_five_years) +
-      aes(x = total_medals, y = reorder(year, -total_medals), fill = as.factor(year), alpha=0.95) +
-      geom_bar(stat = "identity") +
-      geom_text(aes(label = total_medals), 
+        aes(x = total_medals, y = reorder(year, -total_medals), fill = as.factor(year), alpha=0.95) +
+        geom_bar(stat = "identity") +
+        geom_text(aes(label = total_medals), 
                   position = position_stack(vjust = 0.5), 
                   size = 5, face='bold') +
-      labs(x = "Total Number of Medals", y = "Year", size=32) +
-      ggtitle(paste0("Top 5 Years for Most Medals in ", input$sport)) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-            panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none",
-            plot.title = element_text(size = 16, face = "bold"),
-            axis.text.x = element_text(size = 14),
-            axis.text.y = element_text(size = 14),
-            axis.title = element_text(size = 15)) +
-      ggthemes::scale_fill_tableau() +
-      scale_x_continuous(breaks = breaks)
+        labs(x = "Total Number of Medals", y = "Year", size=32) +
+        ggtitle(paste0("Top 5 Years for Most Medals in ", input$sport)) +
+        theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+              panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position = "none",
+              plot.title = element_text(size = 16, face = "bold"),
+              axis.text.x = element_text(size = 14),
+              axis.text.y = element_text(size = 14),
+              axis.title = element_text(size = 15)) +
+        ggthemes::scale_fill_tableau() +
+        scale_x_continuous(breaks = breaks)
     }
   })
   
@@ -259,29 +349,41 @@ server <- function(input, output, session) {
     
   })
   
+  
   output$medalTable <- renderDataTable({
-    
+    validate(
+      need(nrow(subset_data_p2() |> 
+                  filter(event %in% input$event)) > 0, paste( "There are no medals for this selection."))
+    )
+    req(input$event)
     subset_data_p2() |> 
+      filter(event %in% input$event)|> 
       rename(Country = team,
-             Sport = sport) |> 
-      group_by(Country,Sport) |> 
+             Sport = sport,
+             Event = event) |> 
+      group_by(Country,Sport,Event) |> 
       summarize("Total Medals" = n()) |> 
       arrange(desc(`Total Medals`))
+    
   },options = list(pageLength =10, searching = FALSE))
   
-  output$treemap <- renderPlot( 
-    { subset_data_p2() |> 
-        group_by(team,sport) |> 
-        summarize("Total Medals" = n()) |> 
-        ggplot(aes(area = `Total Medals`, fill = `Total Medals`, 
-                   label =  paste(sport, `Total Medals`, sep = "\n"))) +
-        geom_treemap() + 
-        geom_treemap_text(colour = "white",
-                          place = "centre",
-                          size = 5,
-                          grow = TRUE) +
-        theme(legend.position = 'none') 
-    })
+  output$treemap <- renderPlot( {
+    
+  
+    req(input$event)
+    subset_data_p2() |> 
+      filter(event %in% input$event)|> 
+      group_by(team,sport) |> 
+      summarize("Total Medals" = n()) |> 
+      ggplot(aes(area = `Total Medals`, fill = `Total Medals`, 
+                 label =  paste(sport, `Total Medals`, sep = "\n"))) +
+      geom_treemap() + 
+      geom_treemap_text(colour = "white",
+                        place = "centre",
+                        size = 5,
+                        grow = TRUE) +
+      theme(legend.position = 'none') 
+  })
   
   output$bar_plot_medals <- renderPlot({
     if (input$sport == "All Sports") {
@@ -298,7 +400,7 @@ server <- function(input, output, session) {
         summarize(total_medals = n()) |>
         arrange(desc(total_medals)) 
     }
-      
+    
     if (nrow(top_five_years) == 0) {
       # Displays a void plot if no data are available in the selected country
       ggplot() +
@@ -337,9 +439,9 @@ server <- function(input, output, session) {
         guides(fill = FALSE, alpha = FALSE) +
         scale_y_continuous(breaks = breaks)
       
-    
+      
     }
-
+    
   })
   
 }
