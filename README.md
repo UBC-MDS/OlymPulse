@@ -2,9 +2,11 @@
 
 # OlymPulse 🥇
 
-## Welcome, sports enthusiast! 🏊🏻 🏋🏼
+## Welcome, sports enthusiast! 🤸🏽‍♂️ 🏊🏻 🤽🏾‍♀️
 
 We are happy that you are interested in exploring the history of the medal-winning countries in the most important sports competition worldwide, the Olympic Games. In this app you will find a summary of the Olympic performance of countries throughout history.
+
+## Table of contents
 
 - [Motivation](#motivation)
 - [Explore the app](#explore-the-app)
@@ -12,6 +14,10 @@ We are happy that you are interested in exploring the history of the medal-winni
 - [About the data](#about-the-data)
 - [Installation](#installation)
 - [Contributing](#contributing)
+
+## Explore the app
+
+You can access the deployed app on [shinyapps.io here](https://tetrahydrofuran.shinyapps.io/olympulse/)!
 
 ## Motivation
 
@@ -21,13 +27,9 @@ Being able to access statistics and indicators on the performance of Olympic ath
 
 As sports fans, knowing the statistics of our favorite athletes and sports is necessary to analyze a game or competition, as well as to be able to chat and debate with other sports enthusiasts.
 
-## Explore the app
-
-You can access the deployed app on [shinyapps.io here](https://raulapps.shinyapps.io/OlymPulse/)!
-
 ## Description
 
-![](img/OlymPulse_demo.gif)
+![](img/Olympulse_demo_2.gif)
 
 The app contains two tabs:
 
