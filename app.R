@@ -4,6 +4,7 @@ library(tidyverse)
 library(plotly)
 library(leaflet)
 library(leaflet.extras)
+library(shinytest2)
 library(sf)
 library(countrycode)
 library(RColorBrewer)
@@ -12,7 +13,6 @@ if(!require(treemapify)){
   library(treemapify)
 }
 library(bslib)
-
 if(!require(shinyWidgets)){
   install.packages("shinyWidgets")
   library(shinyWidgets)
@@ -23,31 +23,27 @@ if(!require(shinycssloaders)){
   library(shinycssloaders)
   
 }
-# Read clean world map data, commented out failing during deployment
-# df_map <- read.csv("data/clean/world_map_data.csv")
-
-# Read the clean Olympics data, commented out failing during deployment
-# filtered_data <- read.csv("data/clean/olympic_clean.csv")
 
 # read geo json
 world_map_data <- sf::st_read("data/json/countries.geo.json")
 
-# read raw data
-dataset <- read.csv("data/raw/olympic_raw.csv")
-#read.csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv")
+# read data
+filtered_data <- read.csv("data/clean/olympic_clean.csv")
 
-# Data wrangling to convert the country code from ioc format to iso such that it matches with the map data 
+# preparing data for labels
+labs_data <- filtered_data |>
+  group_by(team, sport) |>
+  summarise(medals= n()) |>
+  slice_max(medals) |> 
+  rename(name = team)
+
+# joining new columns to geo data
+world_map_data_comp <- merge(world_map_data, labs_data, by = "name")
+
 df_map <- as_tibble(world_map_data) |>
   select(id, name) |>
   rename(code = id, country_name = name)
 
-filtered_data <- dataset |>
-  drop_na(medal) |>
-  mutate(code = countrycode(noc, origin = "ioc", destination = "iso3c")) |>
-  inner_join(df_map, by = 'code') |>
-  mutate(team = ifelse(!is.na(country_name), country_name, team)) |>
-  select(-c(code, country_name)) |> 
-  dplyr::distinct()
 
 # building UI
 ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
@@ -149,7 +145,7 @@ server <- function(input, output, session) {
   subset_data <- reactive({
     subset(filtered_data, 
            year >= input$year_range[1] & year <= input$year_range[2] & 
-             team == input$team & season == input$season & 
+             team == input$team & season %in% input$season & 
              (input$sport == "All Sports" | sport == input$sport))
   })
   
@@ -157,7 +153,7 @@ server <- function(input, output, session) {
   subset_data_p2 <- reactive({
   subset(filtered_data, 
            year >= input$year_range_p2[1] & year <= input$year_range_p2[2] & 
-             team == input$team_p2 & season == input$season_p2 & 
+             team == input$team_p2 & season %in% input$season_p2 & 
              medal %in% input$medal & sport %in% input$sport_p2) 
       })
   
@@ -165,7 +161,7 @@ server <- function(input, output, session) {
   subset_data_p3 <- reactive({
     subset(filtered_data, 
            year >= input$year_range[1] & year <= input$year_range[2] & 
-             team == input$team & season == input$season & 
+             team == input$team & season %in% input$season & 
              (input$sport == "All Sports" | sport == input$sport) &
              medal %in% input$medal)
   })
@@ -173,24 +169,29 @@ server <- function(input, output, session) {
   subset_country <- reactive({
     subset(filtered_data, 
            year >= input$year_range[1] & year <= input$year_range[2] &
-             season == input$season)
+             season %in% input$season)
   })
   
   subset_country_p2 <- reactive({
     subset(filtered_data, 
            year >= input$year_range_p2[1] & year <= input$year_range_p2[2] &
-             season == input$season_p2)
+             season %in% input$season_p2)
   })
-  
+
   
   # Create the interactive map of the world 
   output$world_map <- renderLeaflet({
+    
+    # filtered_df <- filtered_df()
+    labels <- paste(world_map_data_comp$name, "|",
+                    "Top sport: ", world_map_data_comp$sport, world_map_data_comp$medals, "medals.")
+
     leaflet() |>
       addProviderTiles("Esri.WorldStreetMap") |>
-      addPolygons(data = world_map_data, 
+      addPolygons(data = world_map_data_comp, 
                   group = "World Map", 
-                  layerId = world_map_data$name, 
-                  label = world_map_data$name,
+                  layerId = world_map_data_comp$name, 
+                  label = labels,
                   color = "#FFFFFF", 
                   weight = 1, 
                   fillOpacity = 0.5, 
