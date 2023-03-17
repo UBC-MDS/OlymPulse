@@ -4,7 +4,6 @@ library(tidyverse)
 library(plotly)
 library(leaflet)
 library(leaflet.extras)
-library(shinytest2)
 library(sf)
 library(countrycode)
 library(RColorBrewer)
@@ -54,9 +53,13 @@ ui <- fluidPage(theme = bs_theme(bootswatch = "spacelab"),
                                font-size: 40px;
                                text-align: center;
                                padding: 480px 0;
-                               }"))),
-              
-                tabsetPanel(
+                               }
+         .tabbable > .nav > li  > a[data-value='Country Level Overview '] {
+                                  background-color: #356f9f;color: white;}
+        
+         .tabbable > .nav > li  > a[data-value='Medal Tally Breakdown'] {
+                                  background-color: #356f9f;color: white;}"))),
+                tabsetPanel(id = 'tabs',
                   tabPanel("Country Level Overview ",
                            titlePanel(h1(id = "title","OlymPulse, Uncovering Olympic Games Laureates' History", align = "center"),
                                       tags$head( tags$style(HTML("#title{color: gray;
