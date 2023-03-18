@@ -15,10 +15,6 @@ We are happy that you are interested in exploring the history of the medal-winni
 - [Installation](#installation)
 - [Contributing](#contributing)
 
-## Explore the app
-
-You can access the deployed app on [shinyapps.io here](https://tetrahydrofuran.shinyapps.io/olympulse/)!
-
 ## Motivation
 
 The Olympic Games are one of the most anticipated sports competitions for sports fans and the most important competition for athletes and countries' sports federations. The level of skills demonstrated by the athletes in their respective disciplines during this competition raises the bar for what a human being is capable of, challenging the impossible and astonishing people worldwide.
@@ -26,6 +22,12 @@ The Olympic Games are one of the most anticipated sports competitions for sports
 Being able to access statistics and indicators on the performance of Olympic athletes is of utmost importance in the planning of resources for sports federations, for these institutions it is necessary to understand what are the disciplines that have given the best results to their country and which ones have a great opportunity for improvement.
 
 As sports fans, knowing the statistics of our favorite athletes and sports is necessary to analyze a game or competition, as well as to be able to chat and debate with other sports enthusiasts.
+
+
+## Explore the app
+
+You can access the deployed app on [shinyapps.io here](https://tetrahydrofuran.shinyapps.io/olympulse/)!
+
 
 ## Description
 
